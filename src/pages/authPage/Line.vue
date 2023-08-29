@@ -1,3 +1,7 @@
+<script setup>
+import { ref } from 'vue'
+</script>
+
 <template>
   <div class="container is-max-desktop mt-4">
     <div class="columns">
@@ -14,28 +18,51 @@
         </p>
       </div>
     </div>
+    <div class="columns">
+      <div class="column has-text-centered is-size-4 mx-auto">
+        <div class="box has-text-centered has-text-grey-light" id="bearer-box">
+          <p class="subtitle is-size-6">
+            {{ bearer }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="columns">
+      <div class="column has-text-centered is-size-4 mx-auto">
+        <div class="box has-text-centered has-text-grey-light" id="bearer-box">
+          <p class="subtitle is-size-6">
+            {{ id_token }}
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import cryptoRandomString from 'crypto-random-string'
-
-const LineAuthUrl = 'https://access.line.me/oauth2/v2.1/authorize'
-const params = {
-  response_type: 'code',
-  client_id: import.meta.env.VITE_LINE_CLIENT_ID,
-  redirect_uri: '_blank',
-  scope: 'openid profile email',
-  state: cryptoRandomString({ length: 32, type: 'alphanumeric' })
-}
-
+import LineAuth from '@/libs/LineAuth.js'
 export default {
   name: 'LineAuth',
+  data() {
+    return {
+      bearer: 'Please signin first',
+      id_token: 'Please signin first'
+    }
+  },
   methods: {
     line_auth() {
-      const newWindow = window.open('/', '_blank', 'width=400,height=500')
-      newWindow.location.href = LineAuthUrl + '?' + new URLSearchParams(params).toString()
+      ;(async () => {
+        let response = await LineAuth.authenticate()
+        this.bearer = response.access_token
+        this.id_token = response.id_token
+      }).call()
     }
   }
 }
 </script>
+
+<style scoped>
+#bearer-box {
+  word-wrap: anywhere;
+}
+</style>
